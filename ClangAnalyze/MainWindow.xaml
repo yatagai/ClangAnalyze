@@ -1,0 +1,80 @@
+<mui:ModernWindow xmlns:my="clr-namespace:ClangAnalyze"  x:Class="ClangAnalyze.MainWindow"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:mui="http://firstfloorsoftware.com/ModernUI"
+  Title="CLANG ANALYZE" Height="480" Width="800" MinHeight="480" MinWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" MinHeight="200"/>
+            <RowDefinition Height="5" />
+            <RowDefinition Height="*" MinHeight="200"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <StackPanel Orientation="Horizontal">
+                <ProgressBar HorizontalAlignment="Left" Width="140" VerticalAlignment="Center" Height="23" IsIndeterminate="True" />
+                <Label Name="window_title" Content="{Binding Title}" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="14" />
+                <Label Content="-" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,5,0" />
+                <Label Content="{Binding SettingFileName}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="500"/>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0" Margin="5,5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Label Content="ANALYZE DIRECTORY :" Grid.Row="0"/>
+                <TextBox Grid.Row="1" Margin="0,1,0,2" Text="{Binding AnalyzeDirectory, Mode=TwoWay}"/>
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Content="LOAD SETTING" Grid.Column="0" Padding="5,0" Margin="5,2" Command="{Binding LoadCommand}"/>
+                    <Button Content="SAVE SETTING" Grid.Column="1" Padding="5,0" Margin="5,2" Command="{Binding SaveCommand}"/>
+                </Grid>
+                <Button Content="ANALYZE" Grid.Row="3" Padding="5,0" Margin="5,2"/>
+            </Grid>
+            <Grid Grid.Column="1" Margin="5,5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Label Content="PROFILES :" Grid.Row="0" VerticalContentAlignment="Center" />
+                <Button Content="ADD" Command="{Binding AddProfileCommand}" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="5,0" Margin="75,1,0,1" FontSize="12" />
+                <Button Content="DELETE" Command="{Binding DeleteProfileCommand}" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="5,0" Margin="119,1,0,1" FontSize="12" />
+                <Border Grid.Row="2" BorderBrush="#FF353535" BorderThickness="2">
+                    <ListBox ItemsSource="{Binding Profiles}" SelectedIndex="{Binding SelectedProfileIndex}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <my:EditableTextBlock Text="{Binding Name, Mode=TwoWay}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+            </Grid>
+            <Grid Grid.Column="2" Margin="5,5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Label Content="OPTIONS :" Grid.Row="0" VerticalContentAlignment="Center" />
+                <TextBox Grid.Row="1" Text="{Binding SelectedProfileOptions, Mode=TwoWay}" IsEnabled="{Binding OptionEnable}" AcceptsReturn="True" />
+                <RadioButton Content="32BIT" IsChecked="{Binding SelectedProfileIs32Bit, Mode=TwoWay}" IsEnabled="{Binding OptionEnable}" HorizontalAlignment="Left" Margin="69,2,0,2" VerticalAlignment="Center" FontSize="12" />
+                <RadioButton Content="64BIT" IsChecked="{Binding SelectedProfileIs64Bit, Mode=TwoWay}" IsEnabled="{Binding OptionEnable}" HorizontalAlignment="Left" Margin="130,2,0,2" VerticalAlignment="Center" FontSize="12" />
+            </Grid>
+        </Grid>
+        <GridSplitter HorizontalAlignment="Stretch" Grid.Row="2"/>
+        <Grid Grid.Row="3">
+        </Grid>
+    </Grid>
+</mui:ModernWindow>

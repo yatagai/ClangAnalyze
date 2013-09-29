@@ -1,0 +1,19 @@
+{
+  "AnalyzeDirectory": "test",
+  "Profiles": [
+    {
+      "Name": "Debug",
+      "Bit": 64,
+      "Options": [
+        "-DDEBUG"
+      ]
+    },
+    {
+      "Name": "Release",
+      "Bit": 64,
+      "Options": [
+        "-DNDEBUG"
+      ]
+    }
+  ]
+}

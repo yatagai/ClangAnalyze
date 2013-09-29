@@ -1,0 +1,15 @@
+﻿<UserControl x:Class="ClangAnalyze.EditableTextBlock"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" Name="root"
+            d:DesignWidth="300">
+    <StackPanel>
+        <TextBlock Name="textBlock"
+             Text="{Binding ElementName=root , Path=Text, Mode=TwoWay}" 
+             MouseRightButtonUp="textBlock_MouseRightButtonUp"/>
+        <TextBox Name="editBox"
+             Visibility="Collapsed" LostFocus="editBox_LostFocus" KeyDown="editBox_KeyDown" Padding="0" AutoWordSelection="True" SelectionOpacity="0.5" />
+    </StackPanel>
+</UserControl>
