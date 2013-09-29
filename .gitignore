@@ -45,6 +45,8 @@ build/
 *.manifest
 *.application
 *.vshost.exe
+*FirstFloor.ModernUI.xml
+*Newtonsoft.Json.xml
 
 # Visual Studio profiler
 *.psess
