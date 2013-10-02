@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using FirstFloor.ModernUI.Windows.Controls;
+using System.Windows.Threading;
 
 namespace ClangAnalyze
 {
@@ -46,6 +47,12 @@ namespace ClangAnalyze
         private void SlnList_Loaded(object sender, RoutedEventArgs e)
         {
             UpdateSlnList();
+
+            // 1分に一回更新する.
+            m_sln_list_update_timer = new DispatcherTimer();
+            m_sln_list_update_timer.Interval = new TimeSpan(0, 1, 0);
+            m_sln_list_update_timer.Tick += new EventHandler(SnlListUpdate_Tick);
+            m_sln_list_update_timer.Start();
         }
 
         /// <summary>
@@ -53,17 +60,21 @@ namespace ClangAnalyze
         /// </summary>
         private void UpdateSlnList()
         {
-            sln_list.Items.Clear();
-            List<string> sln_names = VSConnector.GetOpenSolution();
-            foreach (string sln_name in sln_names)
+            lock (m_locker)
             {
-                sln_list.Items.Add(sln_name);
-            }
-            if (sln_list.Items.Count > 0)
-            {
-                sln_list.SelectedIndex = 0;
+                sln_list.Items.Clear();
+                List<string> sln_names = VSConnector.GetOpenSolution();
+                foreach (string sln_name in sln_names)
+                {
+                    sln_list.Items.Add(sln_name);
+                }
+                if (sln_list.Items.Count > 0)
+                {
+                    sln_list.SelectedIndex = 0;
+                }
             }
         }
+        private object m_locker = new object();
 
         /// <summary>
         /// VS OUTPUTがクリックされた.
@@ -96,6 +107,18 @@ namespace ClangAnalyze
                 {
                     VSConnector.OpenSource(sln_list.Text, src_name, line_no);
                 }
+            }
+        }
+
+        /// <summary>
+        /// solusion list 更新用.
+        /// </summary>
+        private DispatcherTimer m_sln_list_update_timer;
+        private void SnlListUpdate_Tick(object sender, EventArgs e)
+        {
+            if (!sln_list.IsDropDownOpen)
+            {
+                UpdateSlnList();
             }
         }
     }

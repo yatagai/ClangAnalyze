@@ -12,7 +12,7 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
             <StackPanel Orientation="Horizontal">
-                <ProgressBar HorizontalAlignment="Left" Width="140" VerticalAlignment="Center" Height="23" IsIndeterminate="True" />
+                <ProgressBar HorizontalAlignment="Left" Width="140" VerticalAlignment="Center" Height="5" IsIndeterminate="{Binding NoAnalyzing}" Value="{Binding AnalyzeProgressCount}" />
                 <Label Name="window_title" Content="{Binding Title}" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="14" />
                 <Label Content="-" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,5,0" FontSize="14" />
                 <Label Content="{Binding SettingFileName}" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="14"/>
@@ -95,6 +95,18 @@
                     </TreeView.Resources>
                     <TreeView.ItemContainerStyle>
                         <Style TargetType="TreeViewItem">
+                            <Style.Resources>
+                                <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#FF1BA1E2" />
+                            </Style.Resources>
+                            <Style.Triggers>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsSelected" Value="true"/>
+                                        <Condition Property="IsSelectionActive" Value="false"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+                                </MultiTrigger>
+                            </Style.Triggers>
                             <Setter Property="IsExpanded" Value="True" />
                         </Style>
                     </TreeView.ItemContainerStyle>

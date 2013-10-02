@@ -24,12 +24,13 @@ namespace ClangAnalyze
                     @"error:.*",
                     System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
+        public delegate void ProgressMethod(float progress_value);
         /// <summary>
         /// 解析.
         /// </summary>
         /// <param name="setting"></param>
         /// <returns></returns>
-        static public void Analyze(AnalyzeSetting setting, AnalyzeResultNode root)
+        static public void Analyze(AnalyzeSetting setting, AnalyzeResultNode root, ProgressMethod progress_method = null)
         {
             // 弾いてるけど念のため.
             if (!System.IO.Directory.Exists(setting.AnalyzeDirectory))
@@ -48,6 +49,9 @@ namespace ClangAnalyze
             List<string> result = new List<string>();
 
             string[] files = System.IO.Directory.GetFiles(setting.AnalyzeDirectory, "*.cpp", System.IO.SearchOption.AllDirectories);
+
+            int max_progress = files.Length * setting.Profiles.Count;
+            int finish_count = 0;
             foreach (Profile profile in setting.Profiles)
             {
                 string arguments_with_profile = arguments;
@@ -142,8 +146,12 @@ namespace ClangAnalyze
                             }
                         }
                     }
-                }
-                
+                    ++finish_count;
+                    if (progress_method != null)
+                    {
+                        progress_method(((float)finish_count / (float)max_progress) * 100.0f);
+                    }
+                }                
             }
         }
 

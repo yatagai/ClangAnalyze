@@ -345,19 +345,95 @@ namespace ClangAnalyze
             }
             else
             {
-                ResultText = "ANALYZING";
+                ResultText = "ANALYZING-0%";
+                m_result_tree[0].Children = new List<AnalyzeResultNode>();
+                IsAnalyzing = true;
+                AnalyzeProgressCount = 0;
 
-                m_result_tree[0].Children = new ObservableCollection<AnalyzeResultNode>();
-                Analyzer.Analyze(m_analyze_setting, m_result_tree[0]);
-                OnPropertyChanged("ResultTree");
-
-                ResultText = "FINISH ANALYZE";
+                // UIが固まるので別スレで実行.
+                BackgroundWorker worker = new BackgroundWorker();
+                worker.DoWork += new DoWorkEventHandler(AnalyzeWorker_DoWork);
+                worker.ProgressChanged += new ProgressChangedEventHandler(AnalyzeWorker_ProgressChanged);
+                worker.WorkerReportsProgress = true;
+                worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(AnalyzeWorker_RunWorkerCompleted);
+                worker.RunWorkerAsync();
+               
             }
         }
+
+        void AnalyzeWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Analyzer.Analyze(m_analyze_setting, m_result_tree[0], delegate (float progress_count)
+            {
+                BackgroundWorker worker = sender as BackgroundWorker;
+                worker.ReportProgress((int)progress_count);
+            });
+
+            // 100%を見せつけたいので少し止める.
+            System.Threading.Thread.Sleep(150);
+        }
+        void AnalyzeWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            AnalyzeProgressCount = e.ProgressPercentage;
+            ResultText = "ANALYZING-" + AnalyzeProgressCount.ToString() + "%";
+        }
+        void AnalyzeWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            IsAnalyzing = false;
+
+            if (e.Cancelled)
+            {
+                ResultText = "CANCEL ANALYZE";
+            }
+            else
+            {
+                ResultText = "FINISH ANALYZE";
+            }
+
+            // ANALYZEボタンがアクティブにならないことがあるので.
+            CommandManager.InvalidateRequerySuggested();
+        }
+        
         private bool CanAnalyze(object parameter)
         {
-            return true;
+            return !IsAnalyzing;
         }
+        private bool IsAnalyzing
+        {
+            get
+            {
+                return m_is_analyzing;
+            }
+            set
+            {
+                m_is_analyzing = value;
+                OnPropertyChanged("IsAnalyzing");
+                OnPropertyChanged("NoAnalyzing");
+                OnPropertyChanged("ResultTree");
+
+            }
+        }
+        public bool NoAnalyzing
+        {
+            get
+            {
+                return !m_is_analyzing;
+            }
+        }
+        private bool m_is_analyzing;
+        public int AnalyzeProgressCount
+        {
+            get
+            {
+                return m_analyze_progress_count;
+            }
+            set
+            {
+                m_analyze_progress_count = value;
+                OnPropertyChanged("AnalyzeProgressCount");
+            }
+        }
+        private int m_analyze_progress_count;
         #endregion
 
         #region result
@@ -384,7 +460,7 @@ namespace ClangAnalyze
         {
             get
             {
-                return m_result_tree;
+                return IsAnalyzing ? null : m_result_tree;
             }
             private set
             {

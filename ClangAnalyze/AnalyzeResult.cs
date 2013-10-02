@@ -12,24 +12,11 @@ namespace ClangAnalyze
     /// リザルトノード.
     /// @note 親の参照を持つと循環参照によるメモリリークが起こるので禁止.
     /// </summary>
-    public class AnalyzeResultNode : INotifyPropertyChanged
+    public class AnalyzeResultNode
     {
-        /// <summary>
-        /// プロパティ変更.
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            if (PropertyChanged != null)
-            {
-                var e = new PropertyChangedEventArgs(propertyName);
-                PropertyChanged(this, e);
-            }
-        }
-
         public AnalyzeResultNode()
         {
-            Children = new ObservableCollection<AnalyzeResultNode>();
+            Children = new List<AnalyzeResultNode>();
         }
         public string Text
         {
@@ -44,19 +31,11 @@ namespace ClangAnalyze
         }
         private string m_text;
 
-        public ObservableCollection<AnalyzeResultNode> Children
+        public List<AnalyzeResultNode> Children
         {
-            get
-            {
-                return m_children;
-            }
-            set
-            {
-                m_children = value;
-                OnPropertyChanged("Children");
-            }
+            get;
+            set;
         }
-        private ObservableCollection<AnalyzeResultNode> m_children;
     }
 
     /// <summary>
