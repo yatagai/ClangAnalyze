@@ -370,12 +370,19 @@ namespace ClangAnalyze
             });
 
             // 100%を見せつけたいので少し止める.
-            System.Threading.Thread.Sleep(150);
+            System.Threading.Thread.Sleep(300);
         }
         void AnalyzeWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             AnalyzeProgressCount = e.ProgressPercentage;
-            ResultText = "ANALYZING-" + AnalyzeProgressCount.ToString() + "%";
+            if (AnalyzeProgressCount < 100)
+            {
+                ResultText = "ANALYZING-" + AnalyzeProgressCount.ToString() + "%";
+            }
+            else
+            {
+                ResultText = "FINISH ANALYZE-" + AnalyzeProgressCount.ToString() + "%";
+            }
         }
         void AnalyzeWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
@@ -387,7 +394,7 @@ namespace ClangAnalyze
             }
             else
             {
-                ResultText = "FINISH ANALYZE";
+                OnTreeViewSelectChange(m_result_tree[0]);
             }
 
             // ANALYZEボタンがアクティブにならないことがあるので.

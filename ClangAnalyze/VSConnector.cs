@@ -52,7 +52,7 @@ namespace ClangAnalyze
                 {
                     object obj;
                     EnvDTE.DTE dte = null;
-                    
+
                     rot.GetObject(monikers[0], out obj);
                     dte = obj as EnvDTE.DTE;
 
@@ -118,25 +118,33 @@ namespace ClangAnalyze
         {
             List<EnvDTE.DTE> dte_list = GetDTEList();
 
-            EnvDTE.DTE target_dte = null;
-            foreach (EnvDTE.DTE dte in dte_list)
+            bool ret = false;
+            try
             {
-                string name = dte.Solution.FullName.Replace("\\", "/");
-                name = name.Replace("\\\\", "/");
-                if (solution_name == name)
+                EnvDTE.DTE target_dte = null;
+                foreach (EnvDTE.DTE dte in dte_list)
                 {
-                    target_dte = dte;
-                    break;
+                    string name = dte.Solution.FullName.Replace("\\", "/");
+                    name = name.Replace("\\\\", "/");
+                    if (solution_name == name)
+                    {
+                        target_dte = dte;
+                        break;
+                    }
+                }
+
+                ret = target_dte != null;
+
+                if (target_dte != null)
+                {
+                    target_dte.ExecuteCommand("of", source_file_name);
+                    target_dte.ExecuteCommand("GotoLn", line_no.ToString());
+                    target_dte.MainWindow.Activate();
                 }
             }
-
-            bool ret = target_dte != null;
-
-            if (target_dte != null)
+            catch (System.Runtime.InteropServices.COMException)
             {
-                target_dte.ExecuteCommand("of", source_file_name);
-                target_dte.ExecuteCommand("GotoLn", line_no.ToString());
-                target_dte.MainWindow.Activate();
+                ret = false;
             }
 
             // unmanagedなので解放が必要.
@@ -155,43 +163,51 @@ namespace ClangAnalyze
         {
             List<EnvDTE.DTE> dte_list = GetDTEList();
 
-            EnvDTE.DTE target_dte = null;
-            foreach (EnvDTE.DTE dte in dte_list)
+            bool ret = false;
+            try
             {
-                string name = dte.Solution.FullName.Replace("\\", "/");
-                name = name.Replace("\\\\", "/");
-                if (solution_name == name)
+                EnvDTE.DTE target_dte = null;
+                foreach (EnvDTE.DTE dte in dte_list)
                 {
-                    target_dte = dte;
-                    break;
-                }
-            }
-
-            bool ret = target_dte != null;
-
-            if (target_dte != null)
-            {
-                string vsWindowKindOutput = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}";
-                vsWindowKindOutput = vsWindowKindOutput.ToLower();
-                EnvDTE.Window window = target_dte.Windows.Item(vsWindowKindOutput);
-                EnvDTE.OutputWindow output_window = window.Object as EnvDTE.OutputWindow;
-                EnvDTE.OutputWindowPane analyze_pane = null;
-                foreach (EnvDTE.OutputWindowPane pane in output_window.OutputWindowPanes)
-                {
-                    if (pane.Name == "ClangAnalyze")
+                    string name = dte.Solution.FullName.Replace("\\", "/");
+                    name = name.Replace("\\\\", "/");
+                    if (solution_name == name)
                     {
-                        analyze_pane = pane;
+                        target_dte = dte;
                         break;
                     }
                 }
-                if (analyze_pane == null)
+
+                ret = target_dte != null;
+                if (target_dte != null)
                 {
-                    analyze_pane = output_window.OutputWindowPanes.Add("ClangAnalyze");
+                    string vsWindowKindOutput = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}";
+                    vsWindowKindOutput = vsWindowKindOutput.ToLower();
+                    EnvDTE.Window window = target_dte.Windows.Item(vsWindowKindOutput);
+                    EnvDTE.OutputWindow output_window = window.Object as EnvDTE.OutputWindow;
+                    EnvDTE.OutputWindowPane analyze_pane = null;
+                    foreach (EnvDTE.OutputWindowPane pane in output_window.OutputWindowPanes)
+                    {
+                        if (pane.Name == "ClangAnalyze")
+                        {
+                            analyze_pane = pane;
+                            break;
+                        }
+                    }
+                    if (analyze_pane == null)
+                    {
+                        analyze_pane = output_window.OutputWindowPanes.Add("ClangAnalyze");
+                    }
+                    analyze_pane.Clear();
+                    analyze_pane.OutputString(show_string);
+                    target_dte.MainWindow.Activate();
+                    window.Activate();
+                    analyze_pane.Activate();
                 }
-                analyze_pane.Clear();
-                analyze_pane.OutputString(show_string);
-                window.Activate();
-                target_dte.MainWindow.Activate();
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                ret = false;
             }
 
             // unmanagedなので解放が必要.

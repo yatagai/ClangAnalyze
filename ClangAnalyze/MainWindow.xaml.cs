@@ -83,7 +83,16 @@ namespace ClangAnalyze
         /// <param name="e"></param>
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            VSConnector.ShowStringOutPut(sln_list.Text, result_text.Text);
+            if (sln_list.Text.Contains(".sln") && result_text.Text.Length >= 2)
+            {
+                bool ret = VSConnector.ShowStringOutPut(sln_list.Text, result_text.Text);
+                // 失敗したら１回だけリトライしてみる.
+                if (!ret)
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    VSConnector.ShowStringOutPut(sln_list.Text, result_text.Text);
+                }
+            }
         }
 
         /// <summary>
@@ -105,7 +114,13 @@ namespace ClangAnalyze
                 int line_no = int.Parse(match.Groups[2].Value);
                 if (System.IO.File.Exists(src_name))
                 {
-                    VSConnector.OpenSource(sln_list.Text, src_name, line_no);
+                    bool ret = VSConnector.OpenSource(sln_list.Text, src_name, line_no);
+                    // 失敗したら１回だけリトライしてみる.
+                    if (!ret)
+                    {
+                        System.Threading.Thread.Sleep(1000);
+                        VSConnector.OpenSource(sln_list.Text, src_name, line_no);
+                    }
                 }
             }
         }
