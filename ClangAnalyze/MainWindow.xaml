@@ -14,8 +14,8 @@
             <StackPanel Orientation="Horizontal">
                 <ProgressBar HorizontalAlignment="Left" Width="140" VerticalAlignment="Center" Height="23" IsIndeterminate="True" />
                 <Label Name="window_title" Content="{Binding Title}" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="14" />
-                <Label Content="-" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,5,0" />
-                <Label Content="{Binding SettingFileName}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Label Content="-" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,5,0" FontSize="14" />
+                <Label Content="{Binding SettingFileName}" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="14"/>
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1">
@@ -42,7 +42,7 @@
                     <Button Content="LOAD SETTING" Grid.Column="0" Padding="5,0" Margin="5,2" Command="{Binding LoadCommand}"/>
                     <Button Content="SAVE SETTING" Grid.Column="1" Padding="5,0" Margin="5,2" Command="{Binding SaveCommand}"/>
                 </Grid>
-                <Button Content="ANALYZE" Grid.Row="3" Padding="5,0" Margin="5,2"/>
+                <Button Content="ANALYZE" Grid.Row="3" Padding="5,0" Margin="5,2" Command="{Binding AnalyzeCommand}"/>
             </Grid>
             <Grid Grid.Column="1" Margin="5,5">
                 <Grid.RowDefinitions>
@@ -69,12 +69,50 @@
                 </Grid.RowDefinitions>
                 <Label Content="OPTIONS :" Grid.Row="0" VerticalContentAlignment="Center" />
                 <TextBox Grid.Row="1" Text="{Binding SelectedProfileOptions, Mode=TwoWay}" IsEnabled="{Binding OptionEnable}" AcceptsReturn="True" />
-                <RadioButton Content="32BIT" IsChecked="{Binding SelectedProfileIs32Bit, Mode=TwoWay}" IsEnabled="{Binding OptionEnable}" HorizontalAlignment="Left" Margin="69,2,0,2" VerticalAlignment="Center" FontSize="12" />
-                <RadioButton Content="64BIT" IsChecked="{Binding SelectedProfileIs64Bit, Mode=TwoWay}" IsEnabled="{Binding OptionEnable}" HorizontalAlignment="Left" Margin="130,2,0,2" VerticalAlignment="Center" FontSize="12" />
             </Grid>
         </Grid>
         <GridSplitter HorizontalAlignment="Stretch" Grid.Row="2"/>
         <Grid Grid.Row="3">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0*" MinWidth="200"/>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="*" MinWidth="200"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Label Content="RESULT-TREE" Margin="10,6,0,4" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TreeView Grid.Row="1" Grid.Column="0"  ItemsSource="{Binding ResultTree}" my:TreeViewBehaviors.OnSelectedItemChanged="{Binding TreeViewSelectChengeCommand}" BorderThickness="2" BorderBrush="#FF353535">
+                    <TreeView.Resources>
+                        <HierarchicalDataTemplate DataType="{x:Type my:AnalyzeResultNode}" ItemsSource="{Binding Children}">
+                            <TextBlock Text="{Binding Text}" Foreground="#FFC1C1C1" />
+                        </HierarchicalDataTemplate>
+                        <HierarchicalDataTemplate DataType="{x:Type my:FileNode}">
+                            <TextBlock Text="{Binding Text}" Foreground="{Binding TextColor}" />
+                        </HierarchicalDataTemplate>
+                    </TreeView.Resources>
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="TreeViewItem">
+                            <Setter Property="IsExpanded" Value="True" />
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                </TreeView>
+                <GridSplitter Grid.Row="0" Grid.RowSpan="2"  Grid.Column="1" HorizontalAlignment="Stretch" />
+                <Grid Grid.Row="0" Grid.Column="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="100"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" Content="RESULT-VIEW" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <ComboBox Grid.Column="2" Name="sln_list" DropDownOpened="SlnList_DropDownOpened" Loaded="SlnList_Loaded" VerticalAlignment="Center" Margin="0,2" />
+                    <Button Content="VS OUTPUT" Grid.Column="3" Padding="0,2,0,1" Margin="5,0" VerticalAlignment="Center" Click="Button_Click" />
+                </Grid>
+                <my:ResultTextBox Grid.Row="1" Grid.Column="2" x:Name="result_text"  Text="{Binding ResultText, Mode=TwoWay}" MouseDoubleClick="ResultText_MouseDoubleClick" />
+            </Grid>
         </Grid>
     </Grid>
 </mui:ModernWindow>

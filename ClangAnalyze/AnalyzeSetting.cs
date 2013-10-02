@@ -19,16 +19,9 @@ namespace ClangAnalyze
         public Profile()
         {
             Options = new ObservableCollection<string>();
-            Bit = 32;
         }
 
         public string Name
-        {
-            get;
-            set;
-        }
-
-        public int Bit
         {
             get;
             set;

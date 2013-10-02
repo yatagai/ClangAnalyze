@@ -10,6 +10,7 @@ using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.IO;
+using System.Collections.Generic;
 
 namespace ClangAnalyze
 {
@@ -79,7 +80,17 @@ namespace ClangAnalyze
             DeleteProfileCommand = new DelegateCommand(DeleteProfile, CanDeleteProfile);
             SaveCommand = new DelegateCommand(Save, CanSave);
             LoadCommand = new DelegateCommand(Load, CanLoad);
+            AnalyzeCommand = new DelegateCommand(Analyze, CanAnalyze);
             m_setting_file_name = "UNTITLED";
+
+            AnalyzeResultNode root = new AnalyzeResultNode();
+            root.Text = "ROOT";
+            m_result_tree = new ObservableCollection<AnalyzeResultNode>();
+            m_result_tree.Add(root);
+            TreeViewSelectChengeCommand = new DelegateCommand(OnTreeViewSelectChange, null);
+
+
+            VSConnector.GetOpenSolution();
         }
 
         /// <summary>
@@ -127,8 +138,6 @@ namespace ClangAnalyze
                 OnPropertyChanged("SelectedProfileIndex");
                 OnPropertyChanged("OptionEnable");
                 OnPropertyChanged("SelectedProfileOptions");
-                OnPropertyChanged("SelectedProfileIs32Bit");
-                OnPropertyChanged("SelectedProfileIs64Bit");
             }
         }
         private int m_selected_profile_index = -1;
@@ -206,72 +215,6 @@ namespace ClangAnalyze
                     }
                 }
                 OnPropertyChanged("SelectedProfileOptions");
-            }
-        }
-
-        /// <summary>
-        /// 32bitか.
-        /// </summary>
-        public bool SelectedProfileIs32Bit
-        {
-            get
-            {
-                if (Profiles.Count > m_selected_profile_index &&
-                    m_selected_profile_index >= 0)
-                {
-                    return m_analyze_setting.Profiles[m_selected_profile_index].Bit == 32;
-                }
-                return false;
-            }
-            set
-            {
-                if (Profiles.Count > m_selected_profile_index &&
-                    m_selected_profile_index >= 0)
-                {
-                    if (value == true)
-                    {
-                        m_analyze_setting.Profiles[m_selected_profile_index].Bit = 32;
-                    }
-                    else
-                    {
-                        m_analyze_setting.Profiles[m_selected_profile_index].Bit = 64;
-                    }
-                }
-                OnPropertyChanged("SelectedProfileIs32Bit");
-                OnPropertyChanged("SelectedProfileIs64Bit");
-            }
-        }
-
-        /// <summary>
-        /// 64bitか.
-        /// </summary>
-        public bool SelectedProfileIs64Bit
-        {
-            get
-            {
-                if (Profiles.Count > m_selected_profile_index &&
-                    m_selected_profile_index >= 0)
-                {
-                    return m_analyze_setting.Profiles[m_selected_profile_index].Bit == 64;
-                }
-                return false;
-            }
-            set
-            {
-                if (Profiles.Count > m_selected_profile_index &&
-                    m_selected_profile_index >= 0)
-                {
-                    if (value == true)
-                    {
-                        m_analyze_setting.Profiles[m_selected_profile_index].Bit = 64;
-                    }
-                    else
-                    {
-                        m_analyze_setting.Profiles[m_selected_profile_index].Bit = 32;
-                    }
-                }
-                OnPropertyChanged("SelectedProfileIs32Bit");
-                OnPropertyChanged("SelectedProfileIs64Bit");
             }
         }
 
@@ -383,6 +326,129 @@ namespace ClangAnalyze
         }
 
         AnalyzeSetting m_analyze_setting = new AnalyzeSetting();
+        #endregion
+
+        #region analyzer
+        /// <summary>
+        /// Analyzeコマンド.
+        /// </summary>
+        public ICommand AnalyzeCommand
+        {
+            get;
+            private set;
+        }
+        private void Analyze(object parameter)
+        {
+            if (!System.IO.Directory.Exists(m_analyze_setting.AnalyzeDirectory))
+            {
+                ResultText = "error: Not Found Directory " + m_analyze_setting.AnalyzeDirectory;
+            }
+            else
+            {
+                ResultText = "ANALYZING";
+
+                m_result_tree[0].Children = new ObservableCollection<AnalyzeResultNode>();
+                Analyzer.Analyze(m_analyze_setting, m_result_tree[0]);
+                OnPropertyChanged("ResultTree");
+
+                ResultText = "FINISH ANALYZE";
+            }
+        }
+        private bool CanAnalyze(object parameter)
+        {
+            return true;
+        }
+        #endregion
+
+        #region result
+        /// <summary>
+        /// リザルトテキスト.
+        /// </summary>
+        public string ResultText
+        {
+            get
+            {
+                return m_result_text;
+            }
+            set
+            {
+                m_result_text = value;
+                OnPropertyChanged("ResultText");
+            }
+        }
+        private string m_result_text;
+        /// <summary>
+        /// リザルトツリー.
+        /// </summary>
+        public ObservableCollection<AnalyzeResultNode> ResultTree
+        {
+            get
+            {
+                return m_result_tree;
+            }
+            private set
+            {
+                m_result_tree = value;
+            }
+        }
+        private ObservableCollection<AnalyzeResultNode> m_result_tree;
+
+        /// <summary>
+        /// ツリービュークリックコマンド.
+        /// </summary>
+        public ICommand TreeViewSelectChengeCommand
+        {
+            get;
+            private set;
+        }
+        private void OnTreeViewSelectChange(object parameter)
+        {
+            if (parameter == null)
+            {
+                return;
+            }
+            AnalyzeResultNode node = parameter as AnalyzeResultNode;
+            if (node == null)
+            {
+                return;
+            }
+            ResultText = GetResultText(node) + "\n";
+        }
+
+        /// <summary>
+        /// リザルトテキストの取得.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        private string GetResultText(AnalyzeResultNode node)
+        {
+            string result = "";
+
+            if (node is FileNode)
+            {
+                foreach (AnalyzeResultNode chid_node in node.Children)
+                {
+                    if (result != "")
+                    {
+                        result += "\n";
+                    }
+                    result += chid_node.Text;
+                }
+            }
+            else
+            {
+                foreach (AnalyzeResultNode chid_node in node.Children)
+                {
+                    if (result != "")
+                    {
+                        result += "\n";
+                    }
+                    result += GetResultText(chid_node);
+                }
+            }
+
+            return result;
+        }
         #endregion
     }
 }

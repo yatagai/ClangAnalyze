@@ -1,0 +1,19 @@
+{
+  "AnalyzeDirectory": "D:\\ClangAnalyze\\TestFiles\\TestDirectory",
+  "Profiles": [
+    {
+      "Name": "Windows-Debug-32bit",
+      "Options": [
+        "-triple i386-pc-win32",
+        "-DDEBUG"
+      ]
+    },
+    {
+      "Name": "Windows-Release-64bit",
+      "Options": [
+        "-triple x86_64-pc-win32",
+        "-DNDEBUG"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+﻿<UserControl x:Class="ClangAnalyze.ResultTextBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" Name="root"
+             d:DesignWidth="300" d:DesignHeight="200" FontWeight="Bold">
+    <RichTextBox Name="base_text_box" IsReadOnly="True" AutoWordSelection="True" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto" CaretBrush="#FF9A9A9A" IsReadOnlyCaretVisible="True" SelectionOpacity="0.7" MouseDoubleClick="base_text_box_MouseDoubleClick" />
+</UserControl>
