@@ -11,7 +11,7 @@ namespace ClangAnalyze
         // clang 形式から visual studio形式へ変換用.
         static readonly System.Text.RegularExpressions.Regex LineRegex =
                 new System.Text.RegularExpressions.Regex(
-                    @"([A-Z]:[\\/].*?):([0-9]*):([0-9]*)(:.*)",
+                    @"([A-Z]:[\\/].*?):([0-9]*):([0-9]*):(.*)",
                     System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         // -Whogehoge->Disable with -Wno-hogehogeへ変換用.
         static readonly System.Text.RegularExpressions.Regex WarningRegex =
@@ -39,12 +39,12 @@ namespace ClangAnalyze
             }
 
             string command_name = "clang/clang++.exe";
-            string arguments = "-cc1";
-            arguments += " -analyze";
-            arguments += " -analyzer-checker=cplusplus,alpha.cplusplus,core,unix.Malloc,unix.MismatchedDeallocator";
-            arguments += " -fdiagnostics-show-option";
-            arguments += " -Wall";
-            arguments += " -Wno-unused-command-line-argument";
+            string arguments = "\"-cc1\"";
+            arguments += " \"-analyze\"";
+            arguments += " \"-analyzer-checker=cplusplus,alpha.cplusplus,core,unix.Malloc,unix.MismatchedDeallocator\"";
+            arguments += " \"-fdiagnostics-show-option\"";
+            arguments += " \"-Wall\"";
+            arguments += " \"-Wno-unused-command-line-argument\"";
             string directory = setting.AnalyzeDirectory.Replace('\\', '/');
             List<string> result = new List<string>();
 
@@ -57,24 +57,30 @@ namespace ClangAnalyze
                 string arguments_with_profile = arguments;
                 foreach (string option in profile.Options)
                 {
-                    arguments_with_profile += " " + option;
+                    arguments_with_profile += " " + "\"" + option + "\"";
                 }
                 foreach (string file_name in files)
                 {
                     // プロセスの設定.
                     ProcessStartInfo info = new ProcessStartInfo();
                     info.FileName = command_name;
-                    info.Arguments = arguments_with_profile + " " + file_name;
+                    info.Arguments = arguments_with_profile + " " + "\"" + file_name + "\"";
                     info.CreateNoWindow = true;
                     info.UseShellExecute = false;
-                    info.RedirectStandardOutput = true;
+                    info.RedirectStandardOutput = false;
                     info.RedirectStandardError = true;
                     // プロセスの実行.
                     Process process = Process.Start(info);
-                    string std_output = process.StandardOutput.ReadToEnd();
-                    string std_error = process.StandardError.ReadToEnd();
-                    string process_result = std_output + std_error;
+                    string temp = "";
+                    string std_error = "";
 
+                    while ((temp = process.StandardError.ReadLine()) != null)
+                    {
+                        std_error += temp + "\n";
+                    }
+
+                    string process_result = std_error;
+                    process.WaitForExit();
                     if (process_result != "")
                     {
                         process_result = process_result.Replace("\r\r\n", "\n");
@@ -90,8 +96,14 @@ namespace ClangAnalyze
                                 string source_file_name = line_match.Groups[1].Value.Replace("\\", "/");
                                 source_file_name = source_file_name.Replace("\\\\", "/");
 
-                                string new_diagnostics = source_file_name + "(" + line_match.Groups[2].Value + "," + line_match.Groups[3].Value + ") " + line_match.Groups[4].Value;
-                                bool is_error = new_diagnostics.Contains("error:");
+                                string new_diagnostics = source_file_name + ":" + line_match.Groups[2].Value + "," + line_match.Groups[3].Value + ": " + line_match.Groups[4].Value;
+
+                                if (new_diagnostics.Contains("note:"))
+                                {
+                                    continue;
+                                }
+                                
+                                bool is_error = new_diagnostics.Contains(" error: ");
                                 if (!is_error)
                                 {
                                     System.Text.RegularExpressions.Match warning_match = WarningRegex.Match(new_diagnostics);

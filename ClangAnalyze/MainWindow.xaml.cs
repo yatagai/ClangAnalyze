@@ -85,7 +85,18 @@ namespace ClangAnalyze
         {
             if (sln_list.Text.Contains(".sln") && result_text.Text.Length >= 2)
             {
-                bool ret = VSConnector.ShowStringOutPut(sln_list.Text, result_text.Text);
+                // 表示するテキストをVisualStudio用のquick fix構文になるように置換.
+                System.Text.RegularExpressions.Regex re = new System.Text.RegularExpressions.Regex(@"([A-Z]:[\\/].*?)\:([0-9,]*)\:(.*)",
+                    System.Text.RegularExpressions.RegexOptions.Multiline);
+                System.Text.RegularExpressions.Match match = re.Match(result_text.Text);
+                string text = "";
+                while (match.Success)
+                {
+                    text += match.Groups[1].Value + "(" + match.Groups[2].Value + "):" + match.Groups[3].Value + "\n";
+                    match = match.NextMatch();
+                }
+
+                bool ret = VSConnector.ShowStringOutPut(sln_list.Text, text);
                 // 失敗したら１回だけリトライしてみる.
                 if (!ret)
                 {
@@ -104,7 +115,7 @@ namespace ClangAnalyze
         {
             System.Text.RegularExpressions.Regex regex =
                 new System.Text.RegularExpressions.Regex(
-                    @"([A-Z]:[\\/].*?)\(([0-9]*).*",
+                    @"([A-Z]:[\\/].*?)\:([0-9]*).*",
                     System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
             System.Text.RegularExpressions.Match match = regex.Match(result_text.SelectedText);

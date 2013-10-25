@@ -69,13 +69,13 @@ namespace ClangAnalyze
             {
                 var paragraph = new Paragraph();
                 
-                if (line.Contains("error:"))
+                if (line.Contains(" error: "))
                 {
                     var span = new Span { Foreground = Brushes.Red };
                     span.Inlines.Add(line);
                     paragraph.Inlines.Add(span);
                 }
-                else if (line.Contains("warning:"))
+                else if (line.Contains(" warning: "))
                 {
                     var span = new Span { Foreground = Brushes.Yellow };
                     span.Inlines.Add(line);

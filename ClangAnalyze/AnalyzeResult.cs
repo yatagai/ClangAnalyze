@@ -71,6 +71,8 @@ namespace ClangAnalyze
     {
         public FileNode(string file_name)
         {
+            file_name = System.IO.Path.GetFullPath(file_name);
+
             file_name = file_name.Replace("\\", "/");
             file_name = file_name.Replace("\\\\", "/");
             Text = System.IO.Path.GetFileName(file_name);

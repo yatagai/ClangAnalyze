@@ -137,7 +137,7 @@ namespace ClangAnalyze
 
                 if (target_dte != null)
                 {
-                    target_dte.ExecuteCommand("of", source_file_name);
+                    target_dte.ExecuteCommand("of", "\"" + source_file_name + "\"");
                     target_dte.ExecuteCommand("GotoLn", line_no.ToString());
                     target_dte.MainWindow.Activate();
                 }
